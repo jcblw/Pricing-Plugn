@@ -8,10 +8,6 @@ class PricirModelForm extends PricirModelApp {
 	global const CURRENT_VERSION;
 	global const TABLE_NAME;
 	
-	private $tableName = TABLE_NAME;
-	private $currentVer = CURRENT_VERSION;
-	private $installedVer;
-	
 	public __construct() {
 		if (get_option("pricir_db_version")) {
 			$this->installedVer = get_option("pricir_db_version");
@@ -20,41 +16,83 @@ class PricirModelForm extends PricirModelApp {
 		}
 	}
 
-	public function storeNewPrice($id, $price, $label, $loc) {
-		global $wpdb;
-		$wpdb->insert($tableName, array('price' => $price, 'label' => $label, 'location' => $loc), array('%f', '%s', '%s')) or die("could not insert data into table");
+	public function storeNewPrice($price, $item, $label, $loc) {
+		$data = array('price' => $price, 'item' => $item, 'label' => $label, 'location' => $loc);
+	
+		$this->wpdb->insert($tableName, $data, array('%f', '%s', '%s')) or die("Could not insert data into table");
 	}
-	// Needs to be rewritten
-	public function updatePrice($id, $price, $label = "", $loc = "") {
 
-	}
-	// Check for delete
-	public function deletePrice($id) {
-		if (get_option("Price-" . $id)) {
-			delete_option("Price-" . $id);
-			delete_option("Label-". $id);
-			delete_option("Location-" . $id);
-		} else {
-			die("Invalid call to Price-$id");
-		}
-	}
-	// Check for delete
-	public function getPriceArray($id) {
-		if (get_option("Price-" . $id)) {
-			$arr = array();
+	public function updatePrice($id, $price, $item ="", $label = "", $loc = "") {
+		$data = array('price' => $price);
+		$tableName = self::TABLE_NAME;
+		$where = " WHERE id = ' " . $id . " ' ";
 		
-			$arr["Price-" . $id] = get_option("Price-" . $id);
-			$arr["Label-". $id] = get_option("Label-". $id);
-			$arr["Location-" . $id] = get_option("Location-" . $id);
+		if (strlen($label) > 0) { $data['label'] = $label; } 
+		if (strlen($loc) >  0) { $data['loc'] = $loc; }
+		if (strlen($item) > 0) { $data['item'] = $item; }
+		
+		$this->wpdb->update($tableName, $data, $where, array('%f', '%s', '%s', '%s'), '%s') or die('Could not update database');
+	}
+
+	public function deletePrice($id) {
+		$tableName = self::TABLE_NAME;
+		$where = " WHERE id = ' " . $id . " ' ";
+		
+		$sql = "DELETE FROM ";
+		$sql .= $tableName;
+		$sql .= $where;
+		
+		$this->wpdb->query($sql) or die("Could not delte from database");
+	}
+
+	public function getAllPrices($filter = false) {
+		$tableName = self::TABLE_NAME;
+		$arr = array();
+	
+		if ($filter) {
+			$sql = "SELECT price, item, label, location FROM ";
+			$sql .= $tableName;
+			$sql .= " WHERE " . $filter;
 			
-			return $arr;
+			$arr = $this->wpdb->get_results($sql, ARRAY_A);
 		} else {
+			$sql = "SELECT price, item, label, location FROM ";
+			$sql .= $tableName;
+			
+			$arr = $this->wpdb->get_results($sql, ARRAY_A);
+		}
+		
+		return $arr;
+	}
+	
+	public function getPriceArray($id, $format, $offset = 0) {
+		$arr = array();
+		$formats = array('OBJECT', 'ARRAY_A', 'ARRAY_N');
+		
+		$tableName = self::TABLE_NAME;
+		$where = " WHERE id = ' " . $id . " ' ";
+		
+		$sql = "SELECT price, item, label, location FROM ";
+		$sql .= $tableName . $where;
+		
+		if(!in_array($format, $formats)) { 
+			die("not a valid format");
 			return false;
 		}
+		
+		$arr = $this->wpdb->get_row($sql, $format, $offset);
 	}
 	
 	public function getInstalledVer() {
 		return $this->InstalledVer;
+	}
+	
+	public function getCurrentVer() {
+		return self::CURRENT_VERSION;
+	}
+	
+	public function getTableName() {
+		return self::TABLE_NAME;
 	}
 	
 	public function setInstalledVer($ver) {
