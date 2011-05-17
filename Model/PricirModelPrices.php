@@ -43,6 +43,19 @@ class PricirModelPrices extends PricirModelApp {
 		return $arr;
 	}
 	
+	public function getPricesCount() {
+		$arr = array();
+		$count = 0;
+		
+		$sql = "SELECT id FROM ";
+		$sql .= self::TABLE_NAME;
+
+		$arr = $this->wpdb->get_col($sql, 0);
+		$count = count($arr);
+		
+		return $count;
+	}
+	
 }
 
 ?>

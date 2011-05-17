@@ -38,7 +38,7 @@ class PricirModelForm extends PricirModelApp {
 		$sql .= $tableName;
 		$sql .= $where;
 		
-		$this->wpdb->query($sql) or die("Could not delte from database");
+		$this->wpdb->query($sql) or die("Could not delete from database");
 	}
 	
 	public function getTableName() {

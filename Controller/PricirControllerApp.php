@@ -2,7 +2,9 @@
 
 require_once("../View/PricirViewForm.php") or die("Could not find PricirViewForm.php in the /View directory.");
 require_once("../Model/PricirModelForm.php") or die("Could not find PricirModelForm.php in the /Model directory.");
+require_once("../config.php") or die("Could not find the Config file in the root directory.");
 
+// inheritance needs to be fixed here
 class PricirControllerApp {
 	protected $view = new PricirViewForm;
 	protected $model = new PricirModelForm;
