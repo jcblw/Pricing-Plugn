@@ -1,15 +1,14 @@
 <?php
 
-require_once("PricirViewApp.php") or die("Could not find PricirViewApp.php in /View directory.");
+require_once("/PricirViewApp.php");
 
 class PricirViewPrices extends PricirViewApp {
 
 	// A Table strictly for display purposes, if you want an 
 	// editable table use createAllPricesBatchEdit in the PricirViewForm class
 	
-	// Pagination needs its own class, and this function needs work
 	public function createAllPricesList($allPrices, $limit, $offset) {
-		//$i = $offset;
+		$i = $offset;
 		
 		echo "<table>";
 		echo "<tr>";
@@ -33,7 +32,7 @@ class PricirViewPrices extends PricirViewApp {
 				
 			echo "</tr>";
 			
-			//($i == $limit) ? break : $i++; 
+			if ( $i == $limit) { break; } else { $i++; }
 		}
 		
 		echo "</table>";

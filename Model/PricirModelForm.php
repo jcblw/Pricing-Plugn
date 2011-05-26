@@ -1,21 +1,18 @@
 <?php
 
-require_once("PricirModelApp.php") or die("Could not find PricirModelApp.php in the /Model directory");
+require_once("/PricirModelApp.php");
 
 class PricirModelForm extends PricirModelApp {
 
-	public __construct() {
-		if (get_option("pricir_db_version")) {
-			$this->installedVer = get_option("pricir_db_version");
-		} else {
-			$this->installedVer = 0;
-		}
+	public function __construct() {
+		parent::__construct();
+		
 	}
 
 	public function storeNewPrice($price, $item, $label, $loc) {
 		$data = array('price' => $price, 'item' => $item, 'label' => $label, 'location' => $loc);
 	
-		$this->wpdb->insert($tableName, $data, array('%f', '%s', '%s')) or die("Could not insert data into table");
+		$this->DB->insert($tableName, $data, array('%f', '%s', '%s')) or die("Could not insert data into table");
 	}
 
 	public function updatePrice($id, $price, $item ="", $label = "", $loc = "") {
@@ -27,7 +24,7 @@ class PricirModelForm extends PricirModelApp {
 		if (strlen($loc) >  0) { $data['loc'] = $loc; }
 		if (strlen($item) > 0) { $data['item'] = $item; }
 		
-		$this->wpdb->update($tableName, $data, $where, array('%f', '%s', '%s', '%s'), '%s') or die('Could not update database');
+		$this->DB->update($tableName, $data, $where, array('%f', '%s', '%s', '%s'), '%s') or die('Could not update database');
 	}
 
 	public function deletePrice($id) {
@@ -38,12 +35,13 @@ class PricirModelForm extends PricirModelApp {
 		$sql .= $tableName;
 		$sql .= $where;
 		
-		$this->wpdb->query($sql) or die("Could not delete from database");
+		$this->DB->query($sql) or die("Could not delete from database");
 	}
 	
 	public function getTableName() {
 		return self::TABLE_NAME;
 	}
+
 }
 
 ?>

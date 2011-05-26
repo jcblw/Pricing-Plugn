@@ -1,14 +1,16 @@
 <?php
 
-require("../config.php") or die("Could not find the Config file in the root directory.");
+require_once( dirname(__DIR__) .  "/config.php" );
 
 class PricirModelApp {
 
-	global const CURRENT_VERSION;
-	global const TABLE_NAME;
+	protected $currentVer;
+	protected $prefix;
 	
-	global $wpdb;
-	protected $installedVer;
+	public function __construct() {
+		$this->currentVer = CURRENT_VERSION;
+		$this->prefix = PREFIX;
+	}
 	
 	public function setInstalledVer($ver) {
 		$this->InstalledVer = $ver;
@@ -19,24 +21,24 @@ class PricirModelApp {
 	}
 	
 	public function getCurrentVer() {
-		return self::CURRENT_VERSION;
+		return $this->currentVer;
 	}
 	
 	public function getAllPrices($filter = false) {
-		$tableName = self::TABLE_NAME;
+		global $wpdb;
 		$arr = array();
 	
 		if ($filter) {
 			$sql = "SELECT price, item, label, location FROM ";
-			$sql .= $tableName;
+			$sql .= $this->tableName;
 			$sql .= " WHERE " . $filter;
 			
-			$arr = $this->wpdb->get_results($sql, ARRAY_A);
+			$arr = $wpdb->get_results($sql, ARRAY_A);
 		} else {
 			$sql = "SELECT price, item, label, location FROM ";
-			$sql .= $tableName;
+			$sql .= $this->tableName;
 			
-			$arr = $this->wpdb->get_results($sql, ARRAY_A);
+			$arr = $wpdb->get_results($sql, ARRAY_A);
 		}
 		
 		return $arr;

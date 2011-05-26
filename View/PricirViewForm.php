@@ -1,9 +1,9 @@
 <?php 
 
-require_once("PricirViewApp.php")  or die("Could not find PricirViewApp.php in the /View directory.");
+require_once("/PricirViewApp.php");
 
-class PricirViewForms extends PricirViewApp {
-	
+class PricirViewForm extends PricirViewApp {
+
 	public function displayCreatePriceForm($action, $locations, $items) {
 		
 		// if has priviledges
@@ -50,13 +50,14 @@ class PricirViewForms extends PricirViewApp {
 				echo "<input type='text' name='item-name' />";
 				echo "<input type='submit' value='create' />";
 			echo "</form>";
-		echo "</div>"
+		echo "</div>";
 	}
 	
 	// fix pagination
 	public function createAllPricesBatchEdit($allPrices, $limit, $offset, $action) {
-		//$i = $offset;
-		
+	
+		$i = $offset;
+	
 		$actions = array("delete" => "delete-price", "edit" => "inline-update-price");
 		echo "<div id='edit-prices' class='pricir'>";
 		echo "<form action =' " . $action . " ' method='post'>";
@@ -77,21 +78,22 @@ class PricirViewForms extends PricirViewApp {
 		// This is going to need a lot more work because of validation
 		foreach ($allPrices as $priceElement => $elementArray) {
 			echo "<tr>";
-				echo "<td><input type='checkbox' name=' " . $priceElement . " ' />";
+				// The checkbox only makes the select statment active
+				echo "<td><input type='checkbox' name='$priceElement' id=' " . $priceElement . "-CB' />";
 				
 				// eNames are 'price', 'item', 'location', and 'label'
 				foreach ($elementArray as $eName => $eValue) {
 					echo "<td><p>" . $eValue . "</p></td>"; 
 				}	
 				
-				echo "<select name='action'>";
+				echo "<select name='action' id=' " . $priceElement ."-S'>";
 				foreach ($actions as $key => $value) {
 					echo "<option value=' " . $value . " ' > " . $key . " </option> ";
 				}
 				echo "</select>";
 			echo "</tr>";
 			
-			//($i == $limit) ? break : $i++; 
+			if ( $i == $limit) { break; } else { $i++; }
 		}
 		
 		echo "<tr><input type='submit' value='save' /></tr>";

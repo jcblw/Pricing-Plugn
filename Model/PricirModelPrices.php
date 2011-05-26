@@ -1,8 +1,12 @@
 <?php
 
-require_once("PricirModelApp.php") or die("Could not find PricirModelApp.php in the /Model directory");
+require_once("/PricirModelApp.php");
 
 class PricirModelPrices extends PricirModelApp {
+
+	public function __construct() {
+		parent::__construct();
+	}
 
 	public function getAllPrices($filter = false) {
 		$tableName = self::TABLE_NAME;
@@ -13,12 +17,12 @@ class PricirModelPrices extends PricirModelApp {
 			$sql .= $tableName;
 			$sql .= " WHERE " . $filter;
 			
-			$arr = $this->wpdb->get_results($sql, ARRAY_A);
+			$arr = $this->DB->get_results($sql, ARRAY_A);
 		} else {
 			$sql = "SELECT id, price, item, label, location FROM ";
 			$sql .= $tableName;
 			
-			$arr = $this->wpdb->get_results($sql, ARRAY_A);
+			$arr = $this->DB->get_results($sql, ARRAY_A);
 		}
 		
 		return $arr;
@@ -28,7 +32,7 @@ class PricirModelPrices extends PricirModelApp {
 		$arr = array();
 		$formats = array('OBJECT', 'ARRAY_A', 'ARRAY_N');
 		
-		$tableName = self::TABLE_NAME;
+		$tableName = TABLE_NAME;
 		$where = " WHERE id = ' " . $id . " ' ";
 		
 		$sql = "SELECT price, item, label, location FROM ";
@@ -39,7 +43,7 @@ class PricirModelPrices extends PricirModelApp {
 			return false;
 		}
 		
-		$arr = $this->wpdb->get_row($sql, $format, $offset);
+		$arr = $this->DB->get_row($sql, $format, $offset);
 		return $arr;
 	}
 	
@@ -48,9 +52,9 @@ class PricirModelPrices extends PricirModelApp {
 		$count = 0;
 		
 		$sql = "SELECT id FROM ";
-		$sql .= self::TABLE_NAME;
+		$sql .= TABLE_NAME;
 
-		$arr = $this->wpdb->get_col($sql, 0);
+		$arr = $this->DB->get_col($sql, 0);
 		$count = count($arr);
 		
 		return $count;

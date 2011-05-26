@@ -1,5 +1,7 @@
 <?php
 
+require_once('/PricirViewApp.php');
+
 class PricirViewPagination extends PricirViewApp {
 	
 	private $totalAmt;					// Total amount of actual items
@@ -8,15 +10,19 @@ class PricirViewPagination extends PricirViewApp {
 	private $linkBuffer;					// Amount of Links before and after our current location
 	private $currentOffset;			// Current Offset from zero. In other words, our Link location * our increment
 	private $currentLink;				// The current link location.
-	
-	public function __construct($totalAmt, $increment = '10', $linkBuffer = '3') {
+	private $page;
+
+	public function __construct($totalAmt, $increment = 10, $linkBuffer = 3) {
 		
-		if ( isset($_GET['page']) && isset($_GET['offset']) ) {
-			$this->currentLink = $_GET['page'];
-			$this->curretOffset = $_GET['offset'];
+		$this->totalAmt = $totalAmt;
+		$this->page = $_GET['page'];
+		
+		if ( ($_GET['pricir-page'] > 1 && isset($_GET['pricir-page'])) && ($_GET['pricir-offset'] > 1 && isset($_GET['pricir-offset'])) ) {
+			$this->currentLink = $_GET['pricir-page'];
+			$this->currentOffset = $_GET['pricir-offset'];
 		} else {
-			$this->currentLink = 0;
-			$this->curretOffset = 0;
+			$this->currentLink = 1;
+			$this->currentOffset = 1;
 		}
 		
 		if ($increment > $this->totalAmt) {
@@ -24,9 +30,10 @@ class PricirViewPagination extends PricirViewApp {
 		} else {
 			$this->increment = $increment;
 		
-		// The total number of pages that we should have
-		$totalLinkAmt = ceil($totalAmt/$increment);
-		$this->totalLinkAmt = $totalLinkAmt;
+			// The total number of pages that we should have
+			$totalLinkAmt = ceil($totalAmt/$increment);
+			$this->totalLinkAmt = $totalLinkAmt;
+		}
 		
 		if ($linkBuffer > floor($totalLinkAmt/2)) {
 			die("Error, Pagination link buffer should be less than half the total number of pages");
@@ -47,49 +54,47 @@ class PricirViewPagination extends PricirViewApp {
 	
 		echo "<div class='pricir-pagination'>";
 		echo "<ul class='pricir-pagination-list'>";
-			
-			$rewindParams = array( ($currentLink - 1), ($currentOffset - $increment) );
-			$this->createRewindLinks($rewindParams[0], $rewindParams[1]);
+		
+		$this->createRewindLinks();
 		
 			// Display the links before our current link
 			if ($linkDifference < $linkBuffer) {
 				$newOffset = 0;
 				
-				for ($i = 1; $i < $linkDifference; $i++) {
+				for ($i = 1; $i < $currentLink; $i++) {
 					$newOffset = $i * $increment;
-					echo "<li><a alt='page-$id' id='page-$id' class='pricir-pagination-nav' href='?offset=$newOffset&page=$i'>$i</a></li>'";
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
 				}
 			} else {
 				$newOffset = 0;
 			
 				for ($i = $linkDifference; $i < $currentLink; $i++) {
-					$newOffset = $i * $increment;
-					echo "<li><a alt='page-$id' id='page-$id' class='pricir-pagination-nav'  href='?offset=$newOffset&page=$i'>$i</a></li>'";
+					$newOffset = $i * $increment - $increment;
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
 				}
 			}
 			
 			// Display the current link
-			echo "<li><p>" . $currentLink . "</p></li>";
+			echo "<li><p class='pricir-pagination-nav' id='pricir-current-link'>" . $currentLink . "</p></li>";
 			
 			//  Display the links after our current link
 			if ($linkSum > $totalLinkAmt) {
 				$newOffset = 0;
 				
-				for($i = $currentLink + 1; $i < $totalLinkAmt; $i++) {
-					$newOffset = $i * $increment;
-					echo "<li><a  alt='page-$id' id='page-$id' class='pricir-pagination-nav' href= '?offset=$newOffset&page=$i' >$i</a></li>";
+				for($i = $currentLink + 1; $i <= $totalLinkAmt; $i++) {
+					$newOffset = $i * $increment + $increment;
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
 				}
 			} else {
 				$newOffset = 0;
 				
-				for($i = $currentLink + 1; $i < $linkSum; $i++) {
-					$newOffset = $i * $increment;
-					echo "<li><a alt='page-$id' id='page-$id' class='pricir-pagination-nav'  href= '?offset=$newOffset&page=$i' >$i</a></li>";
+				for($i = ($currentLink + 1); $i <= $linkSum; $i++) {
+					$newOffset = $i * $increment + $increment;
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
 				}
 			}
 			
-			$forwardParams = array( ($currentLink + 1), ($currentOffset + $increment) ) ;
-			$this->createForwardLinks($forwardParams[0], $forwardParams[1] );
+		$this->createForwardLinks();
 			
 		echo "</ul>";
 		
@@ -119,7 +124,7 @@ class PricirViewPagination extends PricirViewApp {
 	}
 	
 	public function getCurrentOffset() {
-		return $this->currentOffset;
+		return (int) $this->currentOffset;
 	}
 	
 	public function getCurretLink() {
@@ -127,26 +132,36 @@ class PricirViewPagination extends PricirViewApp {
 	}
 	
 	//Private functions
-	private function createRewindLinks($rewindLink, $rewindOffset) {
-		$currentLink = $this-currentLink;
+	private function createRewindLinks() {
+
+		$currentLink = $this->currentLink;
+		$increment = $this->increment;
+		$newOffset = $currentLink*$increment;
 		
-		if($currentLink != 1) {
-			echo "<li><a alt='first page' id='page-first' class='pricir-pagination-nav'  href=' ' >first</a></li>' ";
-			echo "<li><a alt='previous page' id='page-prev' class='pricir-pagination-nav'  href='?offset=$rewindOffset&page=$rewindLink''>prev</a></li>' ";
+		if ($currentLink <= $this->totalLinkAmt && $currentLink != 1) {
+			$this->createLink($newOffset, ($currentLink - 1), "prev page", "pricir-prev-page", "Go to the previous page");
+			$this->createLink(1, 1, "first page", "pricir-first-page", "Go to the first page");
+		} else {
+			return;
 		}
 	}
 	
-	private function createForwardLink($forwardLink, $forwardOffset) {
-		$totalLinkAmt = $this->totalLinkAmt;
-		$currentLink = $this-currentLink;
+	private function createForwardLinks() {
+		
+		$currentLink = $this->currentLink;
 		$increment = $this->increment;
+		$newOffset = $currentLink*$increment;
 		
-		$totalOffset = $totalLinkAmt * $increment;
-		
-		if($currentLink != $totalLinkAmt) {
-			echo "<li><a alt='next page' id='page-next' class='pricir-pagination-nav'  href= '?offset=$forwardOffset&page=$forwardLink' >next</a></li>'";
-			echo "<li><a alt='last page' id='page-last' class='pricir-pagination-nav'  href= '?offset=$totaloffset&page=$totalLinkAmt' ''>last</a></li>'";
+		if ($currentLink == 1 || $currentLink != $this->totalLinkAmt) {
+			$this->createLink($newOffset, ($currentLink + 1), "next page", "pricir-next-page", "Go to the next page");
+			$this->createLink(($this->totalAmt - $increment), $this->totalLinkAmt, "last page", "pricir-last-page", "Go to the last page");
+		} else {
+			return;
 		}
+	}
+	
+	private function createLink($offset, $page, $title, $id, $alt = "",  $class="pricir-pagination-nav") {
+		echo "<li><a alr='$alt' id='$id' class='$class' href='?page=$this->page&pricir-offset=$offset&pricir-page=$page'>$title</a></li>";
 	}
 }
 
