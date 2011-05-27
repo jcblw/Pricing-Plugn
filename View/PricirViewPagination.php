@@ -136,7 +136,7 @@ class PricirViewPagination extends PricirViewApp {
 
 		$currentLink = $this->currentLink;
 		$increment = $this->increment;
-		$newOffset = $currentLink*$increment;
+		$newOffset = (($currentLink - 1)*$increment == $increment) ? $newOffset = 1 : $newOffset = ($currentLink - 1) * $increment;
 		
 		if ($currentLink <= $this->totalLinkAmt && $currentLink != 1) {
 			$this->createLink($newOffset, ($currentLink - 1), "prev page", "pricir-prev-page", "Go to the previous page");
