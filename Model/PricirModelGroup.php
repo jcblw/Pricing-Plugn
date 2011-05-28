@@ -11,7 +11,7 @@
  * @author Jordan
  */
 
-require_once 'PricirModelApp.php';
+require_once ROOT_PATH . '/Model/PricirModelApp.php';
 
 class PricirModelGroup extends PricirModelApp {
 	private $group_id;

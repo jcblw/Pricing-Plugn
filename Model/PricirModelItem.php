@@ -1,6 +1,6 @@
 <?php 
 
-require_once ("PricirModelApp.php");
+require_once ROOT_PATH . "/Model/PricirModelApp.php";
 
 class PricirModelItem extends PricirModelApp {
 

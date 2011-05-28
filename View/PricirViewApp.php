@@ -1,8 +1,5 @@
 <?php
 
-class pricirViewApp {
-
-	
-}
+class pricirViewApp { }
 
 ?>

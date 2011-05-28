@@ -1,9 +1,7 @@
 <?php
 
-require_once( dirname(__DIR__) .  "/config.php" );
-
-require_once( ROOT_PATH . "/Model/PricirModelPrices.php" );
-require_once( ROOT_PATH . "/Model/PricirModelDBStructure.php" );
+require_once ROOT_PATH . "/Model/PricirModelPrices.php";
+require_once ROOT_PATH . "/Model/PricirModelDBStructure.php";
 
 /**
  * @property PricirModelDBStructure $modelDBS

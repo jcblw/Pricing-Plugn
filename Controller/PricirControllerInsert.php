@@ -10,8 +10,7 @@
  *
  * @author Jordan
  */
-
-require_once("PricirControllerApp.php");
+require_once ROOT_PATH . '/Controller/PricirControllerApp.php';
 require_once ROOT_PATH .  '/Model/PricirModelGroup.php';
 require_once ROOT_PATH .  '/Model/PricirModelItem.php';
 

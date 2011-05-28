@@ -1,6 +1,6 @@
 <?php 
 
-require_once("/PricirViewApp.php");
+require_once ROOT_PATH . "/View/PricirViewApp.php";;
 
 class PricirViewForm extends PricirViewApp {
 

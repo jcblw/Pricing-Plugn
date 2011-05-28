@@ -16,7 +16,7 @@
  * @property PricirModelItem $itemModel
  */
 
-require_once 'PricirControllerApp.php';
+require_once ROOT_PATH .  '/Controller/PricirControllerApp.php';
 require_once ROOT_PATH . '/Model/PricirModelitem.php';
 require_once ROOT_PATH . '/View/PricirViewItem.php';
 

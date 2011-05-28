@@ -11,8 +11,8 @@
  * @author Jordan
  */
 
-require_once 'PricirViewPagination.php';
-require_once 'PricirVIewApp.php';
+// Includes PricirViewApp class
+require_once ROOT_PATH . "/View/PricirViewPagination.php";
 
 /**
  * @property PricirViewPagination $pagination

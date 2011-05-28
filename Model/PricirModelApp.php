@@ -1,7 +1,5 @@
 <?php
 
-require_once( dirname(__DIR__) .  "/config.php" );
-
 class PricirModelApp {
 
 	protected $currentVer;
