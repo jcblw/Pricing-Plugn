@@ -1,11 +1,11 @@
 <?php
 
-require_once(ROOT_PATH . "/Controller/PricirControllerApp.php");
+require_once ROOT_PATH . "/Controller/PricirControllerApp.php";
 
-require_once( ROOT_PATH .  "/View/PricirViewForm.php" );
-require_once( ROOT_PATH . "/Model/PricirModelForm.php" );
+require_once ROOT_PATH .  "/View/PricirViewForm.php" ;
+require_once ROOT_PATH . "/Model/PricirModelForm.php";
 
-require_once( ROOT_PATH . "/View/PricirViewPagination.php" );
+require_once ROOT_PATH . "/View/PricirViewPagination.php";
 
 /**
  * @param PricirViewForm $viewForm

@@ -41,7 +41,7 @@ function pricir_plugin_init() {
 	$con = new PricirControllerApp();
 	$con->modelDBS->dbInit();
 	
-	$insertCon = new PricirControllerInsert;
+	$insertCon = new PricirControllerInsert();
 	if ($insertCon->modelItem->getTotalItemCount() == 0) {
 		$insertCon->storeNewGroup("Clothes");
 		

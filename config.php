@@ -13,5 +13,4 @@ define("CURRENT_VERSION", 1.0);
 // name of the table in the database
 define("TABLE_NAME", "{$wpdb->prefix}pricir_");
 
-
 ?>

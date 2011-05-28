@@ -23,13 +23,14 @@ class PricirControllerInsert extends PricirControllerApp{
 	private $currentItemId;
 	private $currentGroupId;
 	
-	private $modelItem;
-	private $modelGroup;
+	public $modelItem;
+	public $modelGroup;
 	
 	public function __construct() {
 		parent::__construct();
 		
 		$this->modelGroup = new PricirModelGroup;
+		$this->modelItem = new PricirModelItem;
 	}
 	
 	public function storeNewItem($name, $base_price, $thumbUrl = "", $group_id = NULL) {

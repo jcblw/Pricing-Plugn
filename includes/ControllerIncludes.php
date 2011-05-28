@@ -1,9 +1,9 @@
 <?php
 
-include ROOT_PATH . "/Controller/PricirControllerForm.php";
+require_once ROOT_PATH . "/Controller/PricirControllerForm.php";
 
-include ROOT_PATH . "/Controller/PricirControllerInsert.php";
+require_once ROOT_PATH . "/Controller/PricirControllerInsert.php";
 
-include ROOT_PATH . "/Controller/PricirControllerItemDisplay.php";
+require_once ROOT_PATH . "/Controller/PricirControllerItemDisplay.php";
 
 ?>

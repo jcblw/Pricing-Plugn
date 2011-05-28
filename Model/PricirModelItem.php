@@ -123,8 +123,6 @@ class PricirModelItem extends PricirModelApp {
 		$wpdb->insert($table, $data);
 		$id = $this->id = $wpdb->insert_id;				
 		
-		var_dump($group_id);
-		
 		if (isset($group_id)) {
 			$table = TABLE_NAME . "item_group";
 			$item_group = array("item_id" => $id, "group_id" => $group_id);
@@ -214,7 +212,7 @@ class PricirModelItem extends PricirModelApp {
 				}
 			}
 		} else {
-			;$bln = false;
+			$bln = false;
 		}
 		return $bln;
 	}
