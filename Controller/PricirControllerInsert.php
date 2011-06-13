@@ -13,11 +13,16 @@
 require_once ROOT_PATH . '/Controller/PricirControllerApp.php';
 require_once ROOT_PATH .  '/Model/PricirModelGroup.php';
 require_once ROOT_PATH .  '/Model/PricirModelItem.php';
+require_once ROOT_PATH .  '/Model/PricirModelOption.php';
+require_once ROOT_PATH .  '/Model/PricirModelLov.php';
+require_once ROOT_PATH . "/View/PricirViewNotifiers.php";
 
 
 /**
  * @property PricirModelItem $modelItem
  * @property PricirModelGroup $modelGroup
+ * @property PricirModelOption $modelOption
+ * @property PricirModelLov $modelLov
  */
 class PricirControllerInsert extends PricirControllerApp{
 	private $currentItemId;
@@ -25,33 +30,49 @@ class PricirControllerInsert extends PricirControllerApp{
 	
 	public $modelItem;
 	public $modelGroup;
+	public $modelOption;
 	
 	public function __construct() {
 		parent::__construct();
 		
-		$this->modelGroup = new PricirModelGroup;
-		$this->modelItem = new PricirModelItem;
+		$this->modelGroup = new PricirModelGroup();
+		$this->modelItem = new PricirModelItem();
 	}
 	
-	public function storeNewItem($name, $base_price, $thumbUrl = "", $group_id = NULL) {
-		if (!isset($group_id)) {
-			$group_id = $this->currentGroupId;
-		}
+	public function storeNewItem($name, $thumbUrl, $basePrice, $groupId = NULL) {
+		if (!isset($groupId)) 
+			$groupId = $this->currentGroupId;
 		
-		$item = new PricirModelItem($name, $thumbUrl, $base_price, $group_id);
-		if ($item->insertNewItem()) {
-			echo "Success, New Item Stored!";
-		}
+		$item = new PricirModelItem($name, $thumbUrl, $basePrice, $groupId);
+		if ($item->insertNewItem()) 
+			PricirViewNotifiers::staticTossNotif("New Item Stored", "info");
 		
 		$item_id = $this->currentItemId = $item->getItemId();
 	}
 	
 	public function storeNewGroup($group_name) {
-		if ($this->modelGroup->createNewGroup($group_name)) {
-			echo "Succes, New Group Stored!";
-		}
+		if ($this->modelGroup->createNewGroup($group_name)) 
+			PricirViewNotifiers::staticTossNotif(" New Group Stored", "info");
 		
 		$this->currentGroupId = $this->modelGroup->getGroupId();
+	}
+	
+	public function storeNewOptionList($option_name, $item_id) {
+		$modelLov = new PricirModelLov($option_name, $option_name);
+		$modelLov->createLOV();
+		
+		$modelOption = new PricirModelOption();
+		if ($modelOption->insertOption($option_name, $modelLov->getCurrentLovId()) ) {
+			PricirViewNotifiers::staticTossNotif(" New Option List Stored", "info");
+			$modelOption->associateItemOption($item_id);
+			return $modelOption->getCurrentOptionId();
+		} 
+	}
+	
+	public function storeNewOptionDtl($operator, $price_change, $name, $lov_id) {
+		$modelLov = new PricirModelLov();
+		if ( $modelLov->createListValue($operator, $price_change, $name, $lov_id) )
+			PricirViewNotifiers::staticTossNotif(" New Option Stored", "info");
 	}
 	
 	public function setCurrentGroupId($group_id) {

@@ -1,105 +1,102 @@
 <?php 
 
-require_once ROOT_PATH . "/View/PricirViewApp.php";;
+require_once ROOT_PATH . "/View/PricirViewApp.php";
 
 class PricirViewForm extends PricirViewApp {
-
-	public function displayCreatePriceForm($action, $locations, $items) {
-		
-		// if has priviledges
-		if(is_admin()) { ?>
-			
-			<div id="create-price" class="pricir">
-				<form method="post" action="<?php echo $action; ?>">
-					<ul>
-						<li><label for="items">An Item for this price: </label><select name="items">
-						<?php
-							foreach ($items as $key => $value) {
-						?>
-							<option value="<?php echo $key; ?>"><?php echo $value; ?></option>
-						<?php
-							}
-						?>
-						</select></li>
-						<li><label for="price">Price:</label><input type="text" class="price" name="price" id="price" value="" /></li>
-						<li><label for="label">Description:</label><input type="text" class="label" name="label" id="label" value="" /></li>
-						<li><label for="location">A Location for this price: </label><select name="location">
-						<?php
-							foreach ($locations as $key => $value) {
-						?>
-							<option value="<?php echo $key; ?>"><?php echo $value; ?></option>
-						<?php
-							}
-						?>
-						</select></li>
-						
-					</ul>
-					
-					<input type="hidden" name="action" value="create-price" />
-					<input type='submit' value='create' />
-				</form>
-			</div>
-			
-		<?php } // endif
-	} // end function
 	
-	// Needs more work after the whole iteming system has been more well thought out
-	public function displayCreateItemForm($action) {
-		echo "<div id='create-item' class='pricir'>";
-			echo "<form action=' " . $action . " ' >";
-				echo "<input type='text' name='item-name' />";
-				echo "<input type='submit' value='create' />";
-			echo "</form>";
+	public function __construct() { }
+
+	// Update this later to include attachments with the thumbnails
+	public function createInsertNewItemForm($groupArray= NULL) {
+		
+		echo "<div class='pricir-item-insert'>";
+		echo "<h2>Insert A New Item</h2>";
+		?>
+		
+		<form method="POST"> 
+			<label for="item-name">What is the name of this new item? </label> <input type="text" name="item-name" value="" class="pricir-input" />
+			<label for="item-price">How much does it cost? </label> <input type="text" name="item-price" value="" class="pricir-input" />
+			<label for="item-url">Thumnail URL? </label> <input type="text" name="item-url" value="" class="pricir-input" />
+			
+			<label for="item-group">Which group does this item belong to? </label>
+			<select name ="item-group">
+			<?php if (isset($groupArray)) { 
+			foreach ($groupArray as $group) { ?>
+				<option value="<?php echo $group['group_id']; ?>"><?php echo $group['name'] ?></option>
+			<?php } } else { ?>
+				<option value="">-- no groups exist, create a new group --</option>
+			<?php } ?>
+			</select>
+			
+			<h3>Or, create a new group for this item?</h3>
+			<label for="new-item-group">name? </label>
+			<input type="text" name="new-item-group" value="" class="pricir-input" />
+			
+			<input type="hidden" name="action" value="insert-item" />
+			<input type="submit" class="button-primary" name="submit" value="submit" />
+		</form>
+
+		<?php
 		echo "</div>";
 	}
 	
-	// fix pagination
-	public function createAllPricesBatchEdit($allPrices, $limit, $offset, $action) {
-	
-		$i = $offset;
-	
-		$actions = array("delete" => "delete-price", "edit" => "inline-update-price");
-		echo "<div id='edit-prices' class='pricir'>";
-		echo "<form action =' " . $action . " ' method='post'>";
-		echo "<table>";
-		echo "<tr>";
+	// add opt groups
+	public function createInsertNewOptionForm($itemArray, $groupReferenceArray) {
 		
-		$theads = "<th>Edit?</th>";
-		$theads .= "<th>ID</th>";
-		$theads .= "<th>Price</th>";
-		$theads .= "<th>Item</th>";
-		$theads .= "<th>Description</th>";
-		$theads .= "<th>Location</th>";
-		$theads .= "<th>Action</th>";
+		echo "<div class='pricir-option-insert'>";
+		echo "<h2>Create a new Option Set: </h2>";
+		?>
 		
-		echo $theads;
-		echo "</tr>";
-		
-		// This is going to need a lot more work because of validation
-		foreach ($allPrices as $priceElement => $elementArray) {
-			echo "<tr>";
-				// The checkbox only makes the select statment active
-				echo "<td><input type='checkbox' name='$priceElement' id=' " . $priceElement . "-CB' />";
-				
-				// eNames are 'price', 'item', 'location', and 'label'
-				foreach ($elementArray as $eName => $eValue) {
-					echo "<td><p>" . $eValue . "</p></td>"; 
-				}	
-				
-				echo "<select name='action' id=' " . $priceElement ."-S'>";
-				foreach ($actions as $key => $value) {
-					echo "<option value=' " . $value . " ' > " . $key . " </option> ";
-				}
-				echo "</select>";
-			echo "</tr>";
+		<form method="POST"> 
+			<label for="option-lov-name">A name for this list of options  </label> <input type="text" name="option-name" value="" class="pricir-input" />
 			
-			if ( $i == $limit) { break; } else { $i++; }
-		}
-		
-		echo "<tr><input type='submit' value='save' /></tr>";
-		
-		echo "</table>";
-		echo "</form>";
+			<label for="option-item">The Item this option will affect </label>
+			<select name ="option-item">
+			<?php 
+			if (isset($itemArray) && isset($groupReferenceArray) ) { 
+			foreach ($groupReferenceArray as $k => $group_info_array) {
+			?>
+				<optgroup label="<?php echo $group_info_array['name']; ?>">
+			<?php 
+			foreach ($itemArray as $_k => $item) {
+			if ($item['group_id'] === $group_info_array['group_id']) {
+			?>
+				<option value="<?php echo $item['item_id']; ?>"><?php echo $item['name']; ?></option>
+			<?php } } ?>
+				</optgroup>
+			<?php } } else {  ?>
+				<!--  a link to the insert items page -->
+			<?php } ?>
+			</select>
+			
+			<input type="hidden" name="action" value="insert-option" />
+			<input type="submit" class="button-primary" name="submit" value="submit" />
+		</form>
+
+		<?php
+		echo "</div>";
+	}
+	
+	public function createInsertOptionDtlForm($option_id) {
+		echo "<div class='pricir-option-insert'>"; 
+	?>
+		<form method="POST"> 
+			<label for="option-dtl-name">A name for the option</label> <input type="text" name="option-lov-name" value="" class="pricir-input" />
+			
+			<label for="option-dtl-operator">How this option will modify price</label>
+			<select name="option-dtl-operator" class="pricir-input">
+				<option value="add">(+) - adds to the base price</option>
+				<option value="subtract">(-) - subtracts from the base price</option>
+				<option value="multiply">(*) - multiplies the base price</option>
+				<option value="divide">(/) - divides the base price</option>
+			</select>
+			
+			<label for="option-dtl-price-change">By how much this option will change the initial price </label> <input type="text" name="option-dtl-price-change" value="" class="pricir-input" />
+			
+			<input type="hidden" name="option-id" value="<?php echo $option_id; ?>" />
+			<input type="hidden" name="action" value="insert-option-dtl" />
+		</form>
+	<?php
 		echo "</div>";
 	}
 	

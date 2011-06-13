@@ -6,7 +6,8 @@
  */
 
 /**
- * Description of PricirControllerItemDisplay
+ * This class handles the display of all the items already in the database
+ * 
  *
  * @author Jordan
  */
@@ -17,7 +18,8 @@
  */
 
 require_once ROOT_PATH .  '/Controller/PricirControllerApp.php';
-require_once ROOT_PATH . '/Model/PricirModelitem.php';
+require_once ROOT_PATH . '/Model/PricirModelItem.php';
+require_once ROOT_PATH . '/Model/PricirModelGroup.php';
 require_once ROOT_PATH . '/View/PricirViewItem.php';
 
 class PricirControllerItemDisplay extends PricirControllerApp {
@@ -49,7 +51,7 @@ class PricirControllerItemDisplay extends PricirControllerApp {
 		}
 	}
 	
-	public function DisplayAllItemsList($newLimiter = NULL, $linkBuffer = NULL) {
+	public function displayAllItemsList($newLimiter = NULL, $linkBuffer = NULL) {
 		
 		if (isset($newLimiter)) {
 			$this->queryLimiter = $newLimiter;
@@ -57,9 +59,18 @@ class PricirControllerItemDisplay extends PricirControllerApp {
 			$this->linkBuffer = $linkBuffer;
 		}
 		
-		$itemArray = $this->itemModel->retrieveItems($this->queryOffset, $this->queryLimiter);
+		if ( $this->itemModel->retrieveItems($this->queryOffset, $this->queryLimiter) ) {
+			$itemArray = $this->itemModel->retrieveItems($this->queryOffset, $this->queryLimiter);
+			$this->itemView->createAllItemTable($itemArray);
+		} 
+	}
+	
+	public function displayItemEditTable($item_id) {
+		$modelGroup = new PricirModelGroup();
 		
-		$this->itemView->createAllItemTable($itemArray);
+		$singleItemArray = $this->itemModel->retrieveSingleItem($item_id);
+		$groupArray = $modelGroup->retrieveGroupArray();
+		$this->itemView->createEditItemTable($singleItemArray, $groupArray);
 	}
 }
 

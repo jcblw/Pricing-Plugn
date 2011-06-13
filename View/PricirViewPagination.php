@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_PATH . "/View/PricirViewApp.php";
+require_once ROOT_PATH . "/View/PricirViewNotifiers.php";
 
 class PricirViewPagination extends PricirViewApp {
 	
@@ -17,7 +18,7 @@ class PricirViewPagination extends PricirViewApp {
 		$this->totalAmt = $totalAmt;
 		$this->page = $_GET['page'];
 		
-		if ( ($_GET['pricir-page'] > 1 && isset($_GET['pricir-page'])) && ($_GET['pricir-offset'] > 1 && isset($_GET['pricir-offset'])) ) {
+		if ( (@$_GET['pricir-page'] > 1 && isset($_GET['pricir-page'])) && (@$_GET['pricir-offset'] > 1 && isset($_GET['pricir-offset'])) ) {
 			$this->currentLink = $_GET['pricir-page'];
 			$this->currentOffset = $_GET['pricir-offset'];
 		} else {
@@ -26,7 +27,7 @@ class PricirViewPagination extends PricirViewApp {
 		}
 		
 		if ($increment > $this->totalAmt) {
-			die('Error, Pagination increment greater than total amount.');
+			PricirViewNotifiers::staticTossNotif("Error, Pagination increment greater than total amount ", "alert", 101);
 		} else {
 			$this->increment = $increment;
 		
@@ -36,7 +37,8 @@ class PricirViewPagination extends PricirViewApp {
 		}
 		
 		if ($linkBuffer > floor($totalLinkAmt/2)) {
-			die("Error, Pagination link buffer should be less than half the total number of pages");
+			PricirViewNotifiers::staticTossNotif("Error, Pagination link buffer should be less than half the total number of pages ",  "alert", 102);
+			die("");
 		} else {
 			$this->linkBuffer = $linkBuffer;
 		}
@@ -48,6 +50,7 @@ class PricirViewPagination extends PricirViewApp {
 		$currentOffset = $this->currentOffset;
 		$totalLinkAmt = $this->totalLinkAmt;
 		$linkBuffer = $this->linkBuffer;
+		$increment = $this->increment;
 		
 		$linkDifference = $currentLink - $linkBuffer;
 		$linkSum = $currentLink + $linkBuffer;
@@ -57,20 +60,23 @@ class PricirViewPagination extends PricirViewApp {
 		
 		$this->createRewindLinks();
 		
+			if ($linkDifference > 1) 
+				echo "<li><p>...</p></li>";
+		
 			// Display the links before our current link
 			if ($linkDifference < $linkBuffer) {
 				$newOffset = 0;
 				
 				for ($i = 1; $i < $currentLink; $i++) {
 					$newOffset = $i * $increment;
-					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $i");
 				}
 			} else {
 				$newOffset = 0;
 			
 				for ($i = $linkDifference; $i < $currentLink; $i++) {
 					$newOffset = $i * $increment - $increment;
-					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $i");
 				}
 			}
 			
@@ -83,16 +89,19 @@ class PricirViewPagination extends PricirViewApp {
 				
 				for($i = $currentLink + 1; $i <= $totalLinkAmt; $i++) {
 					$newOffset = $i * $increment + $increment;
-					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $i");
 				}
 			} else {
 				$newOffset = 0;
 				
 				for($i = ($currentLink + 1); $i <= $linkSum; $i++) {
 					$newOffset = $i * $increment + $increment;
-					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $id");
+					$this->createLink($newOffset, $i, "$i", "pricir-page-$i", "Go to page $i");
 				}
 			}
+			
+			if ($linkSum < $totalLinkAmt) 
+				echo "<li><p>...</p></li>";
 			
 		$this->createForwardLinks();
 			
@@ -136,11 +145,11 @@ class PricirViewPagination extends PricirViewApp {
 
 		$currentLink = $this->currentLink;
 		$increment = $this->increment;
-		$newOffset = (($currentLink - 1)*$increment == $increment) ? $newOffset = 1 : $newOffset = ($currentLink - 1) * $increment;
+		$newOffset = (($currentLink - 2)*$increment == 0) ? 1 : ($currentLink -  2) * $increment;
 		
 		if ($currentLink <= $this->totalLinkAmt && $currentLink != 1) {
-			$this->createLink($newOffset, ($currentLink - 1), "prev page", "pricir-prev-page", "Go to the previous page");
 			$this->createLink(1, 1, "first page", "pricir-first-page", "Go to the first page");
+			$this->createLink($newOffset, ($currentLink - 1), "prev page", "pricir-prev-page", "Go to the previous page");
 		} else {
 			return;
 		}
@@ -150,11 +159,11 @@ class PricirViewPagination extends PricirViewApp {
 		
 		$currentLink = $this->currentLink;
 		$increment = $this->increment;
-		$newOffset = $currentLink*$increment;
+		$newOffset = ($increment == 1) ? ($currentLink + 1) * $increment : $currentLink * $increment;
 		
 		if ($currentLink == 1 || $currentLink != $this->totalLinkAmt) {
 			$this->createLink($newOffset, ($currentLink + 1), "next page", "pricir-next-page", "Go to the next page");
-			$this->createLink(($this->totalAmt - $increment), $this->totalLinkAmt, "last page", "pricir-last-page", "Go to the last page");
+			$this->createLink(($this->totalLinkAmt*$increment - $increment), $this->totalLinkAmt, "last page", "pricir-last-page", "Go to the last page");
 		} else {
 			return;
 		}

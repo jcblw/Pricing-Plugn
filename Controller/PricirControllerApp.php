@@ -3,6 +3,7 @@
 require_once ROOT_PATH . "/Model/PricirModelPrices.php";
 require_once ROOT_PATH . "/Model/PricirModelDBStructure.php";
 
+
 /**
  * @property PricirModelDBStructure $modelDBS
  * @property PricirModelPrices $modelPrices

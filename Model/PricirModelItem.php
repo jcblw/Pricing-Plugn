@@ -1,6 +1,7 @@
 <?php 
 
 require_once ROOT_PATH . "/Model/PricirModelApp.php";
+require_once ROOT_PATH . "/View/PricirViewNotifiers.php";
 
 class PricirModelItem extends PricirModelApp {
 
@@ -11,7 +12,6 @@ class PricirModelItem extends PricirModelApp {
 	
 	private $id;
 	
-	// Construct needs some clean up work on the logic
 	public function __construct($name = "", $thumbUrl = "", $basePrice = NULL, $group_id = NULL) {
                 (!empty($name) && is_string($name)) ? $this->name = $name : $this->name = NULL;
                 (isset($basePrice) && is_float($basePrice)) ? $this->basePrice = $basePrice : $this->basePrice = NULL;
@@ -31,45 +31,94 @@ class PricirModelItem extends PricirModelApp {
 		global $wpdb;
 		
 		$table = TABLE_NAME . "item";
-		$sql = $wpdb->prepare("SELECT COUNT(id) FROM $table;");
+		$sql = $wpdb->prepare("SELECT COUNT(item_id) FROM $table;");
 		return (int)$wpdb->get_var($sql);
 	}
 	
-	public function retrieveItems($offset = 0, $limit =0, $output_type = "ARRAY_A") {
+	public function retrieveItems($offset = 0, $limit =0, $output_type = "ARRAY_A", $inc_group_id = false) {
 		global $wpdb;
 		
 		$table = TABLE_NAME . "item";
 		$sql = "SELECT * FROM $table";
 		
 		if ($limit != 0 && $offset != 0 && $offset != 1) {
-			$sql .= " WHERE id > $offset AND id  <= $limit"; 
+			$sql .= " WHERE item_id > $offset AND item_id  <= $limit"; 
 		} elseif (($limit != 0 && $offset != 0) && ($offset == 1)) {
-			$sql .= " WHERE id >= $offset AND id <= $limit";
+			$sql .= " WHERE item_id >= $offset AND item_id <= $limit";
 		}
 		
-		if ($output_type != "ARRAY_A") {
-			if ($output_type != "ARRAY_N") {
-				$output_type = "ARRAY_A";
-			}
+		if ($output_type != "ARRAY_A" || $output_type != "ARRAY_N") {
+			$output_type = "ARRAY_A";
 		}
 		
 		$results = $wpdb->get_results($sql, $output_type);
+		
+		$table = TABLE_NAME . "group_item";
+		$sql = "SELECT group_id FROM $table";
+		
+		if ($limit != 0 && $offset != 0 && $offset != 1) {
+			$sql .= " WHERE item_id > $offset AND item_id  <= $limit"; 
+		} elseif (($limit != 0 && $offset != 0) && ($offset == 1)) {
+			$sql .= " WHERE item_id >= $offset AND item_id <= $limit";
+		}
+	
+		$group_ids = $wpdb->get_col($sql, 0);
+
+		$table = TABLE_NAME . "group";
+		foreach ($results as $key => &$result) {
+			$sql = "SELECT name FROM $table WHERE group_id = $group_ids[$key]";
+			$result['group_name'] = $wpdb->get_var($sql);
+			if ($inc_group_id)
+				$result['group_id'] = (int) $group_ids[$key];
+		}
+		
 		if (!is_array($results)) {
+			PricirViewNotifiers::staticTossNotif("Could not retrieve item array", "info", 201);
 			return false;
 		} else {
 			return $results;
 		}
 	}
 	
+	public function retrieveSingleItem($item_id, $output_type = "ARRAY_A") {
+		global $wpdb;
+		
+		$table = TABLE_NAME . "item";
+		$sql = "SELECT * FROM $table WHERE item_id = $item_id";
+		
+		if ($output_type != "ARRAY_A" || $output_type != "ARRAY_N") {
+			$output_type = "ARRAY_A";
+		}
+		
+		if ($wpdb->get_row($sql, $output_type)) {
+			$item = $wpdb->get_row($sql, $output_type);
+			
+			$table = TABLE_NAME . "group_item";
+			$sql = "SELECT group_id FROM $table WHERE item_id = $item[item_id]";
+
+			$group_id = $wpdb->get_var($sql);
+			
+			$table = TABLE_NAME . "group";
+			$sql = "SELECT name FROM $table WHERE group_id = $group_id";
+			
+			$group_name = $wpdb->get_var($sql);
+			$item['group_name'] = $group_name;
+			return $item;
+		} else {
+			PricirViewNotifiers::staticTossNotif("Could not retrieve item array", "info", 201);
+			return false;
+		}
+	}
+	
 	public function deleteItemById($item_id) {
 		global $wpdb;
-		$table = TABLE_NAME . "item";
 		
-		$sql = "DELETE FROM $table WHERE id = $item_id";
+		$table = TABLE_NAME . "group_item";
+		$sql - "DELETE FROM $table WHERE item_id = $item_id";
 		$wpdb->query($sql);
 		
-		$table = TABLE_NAME . "item_group";
-		$sql - "DELETE FROM $table WHERE item_id = $item_id";
+		$table = TABLE_NAME . "item";
+		$sql = "DELETE FROM $table WHERE item_id = $item_id";
 		$wpdb->query($sql);
 	}
 	
@@ -85,13 +134,14 @@ class PricirModelItem extends PricirModelApp {
 		$where = array("id" => $id);
 		if ($this->DB->update($table, $updated_data, $where)) {
 			unset($updated_data);
-			$table = TABLE_NAME . "item_group";
+			$table = TABLE_NAME . "group_item";
 			
 			$updated_data = array("group_id" => $updated_group_id);
 			$where = array("item_id" => $id);
 			
 			$wpdb->update($table, $updated_data, $where);
 		} else {
+			PricirViewNotifiers::staticTossNotif("Could not update item", "info", 202);
 			return false;
 		}
 	}
@@ -109,12 +159,13 @@ class PricirModelItem extends PricirModelApp {
 		$table = TABLE_NAME . "item";
 		
 		if ($this->verifyDataMembers(false)) {
-				 $name = $this->name;
-				 $basePrice = $this ->basePrice;
-				 $thumbUrl = $this->thumbUrl;
-				 $group_id = $this->group_id;
+			 $name = $this->name;
+			 $basePrice = $this ->basePrice;
+			 $thumbUrl = $this->thumbUrl;
+			 $group_id = $this->group_id;
 		} else {
-				$name = $basePrice = $thumbUrl = $group_id = NULL;
+			PricirViewNotifiers::staticTossNotif("Could not insert item. Data members not valid", "info", 203);
+			return false;
 		}
 		
 		$data = array("name" => $name, "thumb_url" => $thumbUrl, "base_price" => $basePrice);
@@ -124,7 +175,7 @@ class PricirModelItem extends PricirModelApp {
 		$id = $this->id = $wpdb->insert_id;				
 		
 		if (isset($group_id)) {
-			$table = TABLE_NAME . "item_group";
+			$table = TABLE_NAME . "group_item";
 			$item_group = array("item_id" => $id, "group_id" => $group_id);
 			$wpdb->insert($table, $item_group, array('%d', '%d'));
 			
@@ -162,7 +213,7 @@ class PricirModelItem extends PricirModelApp {
 			$item->setId($id);				
 				
 			if (isset($group_id)) {
-				$table = TABLE_NAME . "item_group";
+				$table = TABLE_NAME . "group_item";
 				$item_group = array("item_id" => $id, "group_id" => $group_id);
 				$wpdb->insert($table, $item_group, array('%d', '%d'));
 					
@@ -171,7 +222,7 @@ class PricirModelItem extends PricirModelApp {
 				
 			return true;
 		} else {
-			die("Could Not Insert Item");
+			PricirViewNotifiers::staticTossNotif("Could Not Insert Item", "alert", 204);
 		}
 		 
 	}

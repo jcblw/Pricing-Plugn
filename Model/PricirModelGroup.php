@@ -19,7 +19,7 @@ class PricirModelGroup extends PricirModelApp {
 	public function createNewGroup($GroupName) {
 		global $wpdb;
 		
-		if (is_string($GroupName) && strlen($GroupName) <= 35) {
+		if (is_string($GroupName)) {
 			$data = array('name' => $GroupName);
 			$table = TABLE_NAME."group";
 			
@@ -44,7 +44,7 @@ class PricirModelGroup extends PricirModelApp {
 			}
 			
 		} else {
-			die("Could Not Associate Group and Item.");
+			PricirViewNotifiers::staticTossNotif("Could Not Associate Group and Item", "alert", 301);
 		}
 	}
 	
@@ -56,6 +56,35 @@ class PricirModelGroup extends PricirModelApp {
 			$sql = "SELECT name FROM $table WHERE id = $id";
 			
 			return $wpdb->get_var($sql);
+		}
+	}
+	
+	public function retrieveGroupArray($offset = NULL, $limit = NULL, $output_type = "ARRAY_A") {
+		global $wpdb;
+		
+		$table = TABLE_NAME . "group";
+		$sql = "SELECT * FROM $table";
+		
+		if ($limit != 0 && $offset != 0 && $offset != 1) {
+			$sql .= " WHERE group_id >= $offset AND group_id  < $limit"; 
+		} elseif (($limit != 0 && $offset != 0) && ($offset == 1)) {
+			$sql .= " WHERE group_id >= $offset AND group_id <= $limit";
+		}
+		
+		$sql .= " ORDER BY group_id";
+		
+		if ($output_type != "ARRAY_A" && $output_type != "ARRAY_N") {
+			$output_type = "ARRAY_A";
+		}
+		
+		$results = $wpdb->get_results($sql, $output_type);
+		foreach ($results as &$result)
+			settype($result['group_id'], "integer");
+		if (!is_array($results)) {
+			PricirViewNotifiers::staticTossNotif("Could not retrieve group array", "info", 302);
+			return false;
+		} else {
+			return $results;
 		}
 	}
 	

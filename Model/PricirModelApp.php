@@ -7,7 +7,7 @@ class PricirModelApp {
 	
 	public function __construct() {
 		$this->currentVer = CURRENT_VERSION;
-		$this->prefix = PREFIX;
+		$this->prefix = TABLE_NAME;
 	}
 	
 	public function setInstalledVer($ver) {
