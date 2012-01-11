@@ -1,0 +1,12 @@
+#Removing project files ->
+#  *.projectfileext
+# or /projectfolder/* <- all files
+# if it is allready commited run git rm /folder/filename.ext
+
+#removing vim
+*.swo
+*.swp
+
+#removing kommodo files
+
+*.komodoproject
